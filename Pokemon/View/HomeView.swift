@@ -20,8 +20,10 @@ struct ContentView: View {
                     Text(pokemon.name.capitalized)
                 }
             }
+            .listRowSpacing(10)
             .navigationTitle("Pokemon")
         }
+        .accentColor(.black)
         .searchable(text: $homeViewModel.searchText)
         .onAppear(perform: {
             homeViewModel.getPokemonList {}

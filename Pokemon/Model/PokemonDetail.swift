@@ -26,20 +26,27 @@ struct PokemonDetail: Codable {
 }
 
 // MARK: - Stat
-struct Stat: Codable {
+struct Stat: Codable, Identifiable {
+    let id: UUID? = UUID()
     let baseStat, effort: Int
     let stat: Species
 
     enum CodingKeys: String, CodingKey {
         case baseStat = "base_stat"
-        case effort, stat
+        case effort, stat, id
     }
 }
 
 // MARK: - TypeElement
 struct TypeElement: Codable {
     let slot: Int
-    let type: Species
+    let type: PokemonType
+}
+
+// MARK: - Type
+struct PokemonType: Codable {
+    let name: String
+    let url: String
 }
 
 // MARK: - Species
@@ -49,7 +56,8 @@ struct Species: Codable {
 }
 
 // MARK: - Sprites
-class Sprites: Codable {
+class Sprites: Codable, Identifiable {
+    let id: UUID? = UUID()
     let backDefault: String
     let backFemale: String?
     let backShiny: String

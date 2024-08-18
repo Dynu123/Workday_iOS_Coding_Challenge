@@ -18,6 +18,12 @@ class DetailViewModel: ObservableObject {
         self.networkService = networkService
     }
     
+    func typeUrl(type: PokemonType) -> String {
+        guard let url = URL(string: type.url) else { return ""}
+        let id = url.lastPathComponent
+        return "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-vi/x-y/\(id).png"
+    }
+    
     
     func getPokemonDetails(pokemon: Pokemon, completion: @escaping () -> Void) {
         guard let url = URL(string: pokemon.url) else { return }
