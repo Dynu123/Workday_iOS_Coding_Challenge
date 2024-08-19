@@ -13,10 +13,16 @@ class HomeViewModel: ObservableObject {
     @Published private var pokemons: [Pokemon] = []
     @Published var searchText = ""
     private var networkService: NetworkServiceProtocol
-    private var bag: [AnyCancellable] = []
+    private var cancellableSet: Set<AnyCancellable> = []
+    var offset = 0
+    @Published var viewState: ViewState?
+    @Published var showAlert: Bool = false
+    @Published var loadingError: String = ""
     
-    init(networkService: NetworkServiceProtocol) {
+    
+    init(networkService: NetworkServiceProtocol = NetworkService.default) {
         self.networkService = networkService
+        getPokemonList()
     }
     
     var searchResults: [Pokemon] {
@@ -27,20 +33,59 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    func getPokemonList(completion: @escaping () -> Void) {
-        self.networkService.execute(API.getPokemons, model: Response.self) { [weak self] (result: Result<Response, AFError>) in
-            guard let self = self else { return }
-            switch result {
-            case .success(let response):
-                self.pokemons = response.results
-                print(self.pokemons)
-                completion() // for test case
-            case .failure(let error):
-                if let err = error as AFError? {
-                    print(err)
+    func getPokemonList() {
+        viewState = .loading
+        self.networkService.execute(API.getPokemons(offset: offset), model: Response.self)
+            .sink { (dataResponse) in
+                if dataResponse.error != nil {
+                    self.viewState = .failure
+                    self.createAlert(with: dataResponse.error!)
+                } else {
+                    self.viewState = .success
+                    guard let results = dataResponse.value?.results else { return }
+                    self.pokemons = results
+                    if self.pokemons.isEmpty {
+                        self.viewState = .empty
+                    }
                 }
-                completion()// for test case
-            }
-        }
+            }.store(in: &cancellableSet)
+    }
+    
+    func getNextSetOfPokemonList() {
+        offset += 20
+        //viewState = .loading
+        self.networkService.execute(API.getPokemons(offset: offset), model: Response.self)
+            .sink { (dataResponse) in
+                if dataResponse.error != nil {
+                    self.viewState = .failure
+                    self.createAlert(with: dataResponse.error!)
+                } else {
+                    self.viewState = .success
+                    guard let results = dataResponse.value?.results else { return }
+                    self.pokemons += results
+                    if self.pokemons.isEmpty {
+                        self.viewState = .empty
+                    }
+                }
+            }.store(in: &cancellableSet)
+    }
+    
+    func hasReachedEnd(of pokemon: Pokemon) -> Bool {
+        pokemons.last?.name == pokemon.name
+    }
+    
+    func createAlert( with error: NetworkError ) {
+        loadingError = error.backendError == nil ? error.initialError.localizedDescription : error.backendError!.message
+        self.showAlert = true
     }
 }
+
+
+
+enum ViewState {
+    case loading
+    case success
+    case failure
+    case empty
+}
+

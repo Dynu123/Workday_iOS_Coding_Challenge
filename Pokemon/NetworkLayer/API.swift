@@ -10,7 +10,7 @@ import Alamofire
 
 // MARK: - Create API enum conforming to URLRequestBuilder, add the api name
 enum API: URLRequestBuilder {
-    case getPokemons
+    case getPokemons(offset: Int)
     case getPokemonDetail(id: String)
 }
 
@@ -40,11 +40,22 @@ extension API {
         }
     }
     
+    var queryItems: [String: Int]? {
+        switch self {
+        case .getPokemons(let offset):
+            return ["offset": offset]
+        case .getPokemonDetail:
+            return nil
+        }
+    }
+    
     var headers: HTTPHeaders {
         switch self {
         case .getPokemons, .getPokemonDetail:
             return ["Content-Type": "application/json"]
         }
     }
+    
+    
     
 }

@@ -12,8 +12,12 @@ struct Response: Codable {
     let results: [Pokemon]
 }
 
-struct Pokemon: Codable, Identifiable {
-    let id: UUID?
+struct Pokemon: Codable, Identifiable, Equatable {
+    var id: UUID? = UUID()
     let name: String
     let url: String
+}
+
+extension Pokemon {
+    static var sample = Pokemon(id: UUID(), name: "", url: "")
 }

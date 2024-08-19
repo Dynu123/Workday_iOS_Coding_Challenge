@@ -12,9 +12,12 @@ import Alamofire
 class DetailViewModel: ObservableObject {
     @Published var pokemonDetail = PokemonDetail.sample
     private var networkService: NetworkServiceProtocol
-    private var bag: [AnyCancellable] = []
+    private var cancellableSet: Set<AnyCancellable> = []
+    @Published var viewState: ViewState?
+    @Published var showAlert: Bool = false
+    @Published var loadingError: String = ""
     
-    init(networkService: NetworkServiceProtocol) {
+    init(networkService: NetworkServiceProtocol = NetworkService.default) {
         self.networkService = networkService
     }
     
@@ -25,22 +28,28 @@ class DetailViewModel: ObservableObject {
     }
     
     
-    func getPokemonDetails(pokemon: Pokemon, completion: @escaping () -> Void) {
+    func getPokemonDetails(pokemon: Pokemon) {
+        viewState = .loading
         guard let url = URL(string: pokemon.url) else { return }
         let id = url.lastPathComponent
         
-        self.networkService.execute(API.getPokemonDetail(id: id), model: PokemonDetail.self) { [weak self] (result: Result<PokemonDetail, AFError>) in
-            guard let self = self else { return }
-            switch result {
-            case .success(let pokemonDetail):
-                self.pokemonDetail = pokemonDetail
-                completion() // for test case
-            case .failure(let error):
-                if let err = error as AFError? {
-                    print(err.localizedDescription)
+        self.networkService.execute(API.getPokemonDetail(id: id), model: PokemonDetail.self)
+            .sink { (dataResponse) in
+                if dataResponse.error != nil {
+                    self.viewState = .failure
+                    self.createAlert(with: dataResponse.error!)
+                } else {
+                    self.viewState = .success
+                    guard let detail = dataResponse.value else { return }
+                    self.pokemonDetail = detail
                 }
-                completion()// for test case
-            }
-        }
+            }.store(in: &cancellableSet)
+        
+        
+    }
+    
+    func createAlert( with error: NetworkError ) {
+        loadingError = error.backendError == nil ? error.initialError.localizedDescription : error.backendError!.message
+        self.showAlert = true
     }
 }

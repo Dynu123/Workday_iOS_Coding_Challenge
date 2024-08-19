@@ -18,6 +18,7 @@ protocol URLRequestBuilder: URLRequestConvertible {
     var headers: HTTPHeaders { get }
     var encoding: ParameterEncoding { get }
     var urlRequest: URLRequest { get }
+    var queryItems: [String: Int]? { get }
 }
 
 // MARK: - Extend protocol to define each input
@@ -39,16 +40,26 @@ extension URLRequestBuilder {
         }
     }
     
+    
+    
     var urlRequest: URLRequest {
         var request = URLRequest(url: requestURL)
         request.httpMethod = method.rawValue
         headers.forEach {
             request.addValue($0.value, forHTTPHeaderField: $0.name)
         }
+        let requestQueryItem = queryItems?.compactMap { item in
+            URLQueryItem(name: item.key , value: String(item.value))
+        }
+        guard let queryItem = requestQueryItem else { return  request }
+        request.url?.append(queryItems: queryItem)
         return request
     }
     
     public func asURLRequest() throws -> URLRequest {
         return try encoding.encode(urlRequest, with: parameters)
     }
+    
+    
+    
 }
