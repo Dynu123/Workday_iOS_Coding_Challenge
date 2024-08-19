@@ -142,5 +142,5 @@ struct DetailView: View {
 }
 
 #Preview {
-    DetailView(pokemon: Pokemon.sample)
+    DetailView(pokemon: Response.mockPokemons.first!)
 }

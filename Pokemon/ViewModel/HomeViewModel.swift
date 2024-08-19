@@ -10,7 +10,7 @@ import Combine
 import Alamofire
 
 class HomeViewModel: ObservableObject {
-    @Published private var pokemons: [Pokemon] = []
+    @Published var pokemons: [Pokemon] = []
     @Published var searchText = ""
     private var networkService: NetworkServiceProtocol
     private var cancellableSet: Set<AnyCancellable> = []
@@ -80,12 +80,9 @@ class HomeViewModel: ObservableObject {
     }
 }
 
-
-
 enum ViewState {
     case loading
     case success
     case failure
     case empty
 }
-
