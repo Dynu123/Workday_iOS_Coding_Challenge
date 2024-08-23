@@ -10,6 +10,7 @@ import XCTest
 import Combine
 import Alamofire
 
+// MARK: - Unit tests for the DetailViewModel
 final class DetailViewModelTests: XCTestCase {
     
     let viewModel = DetailViewModel(networkService: NetworkService())
@@ -26,6 +27,12 @@ final class DetailViewModelTests: XCTestCase {
         let expectedUrl1 = ""
         let actualUrl1 = viewModel.typeUrl(type: invalidType)
         XCTAssertEqual(expectedUrl1, actualUrl1)
-        
+    }
+    
+    func testGetPokemonDetails() throws {
+        guard let pokemon = Response.mockPokemons.first else { return }
+        viewModel.getPokemonDetails(pokemon: pokemon){}
+        XCTAssertEqual(viewModel.pokemonDetail.name, "Pikachu")
+        XCTAssertEqual(viewModel.pokemonDetail.height, 22)
     }
 }

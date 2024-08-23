@@ -40,8 +40,6 @@ extension URLRequestBuilder {
         }
     }
     
-    
-    
     var urlRequest: URLRequest {
         var request = URLRequest(url: requestURL)
         request.httpMethod = method.rawValue
@@ -59,7 +57,4 @@ extension URLRequestBuilder {
     public func asURLRequest() throws -> URLRequest {
         return try encoding.encode(urlRequest, with: parameters)
     }
-    
-    
-    
 }

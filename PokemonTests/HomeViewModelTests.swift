@@ -10,9 +10,10 @@ import XCTest
 import Combine
 import Alamofire
 
+// MARK: - Unit tests for the HomeViewModel
 final class HomeViewModelTests: XCTestCase {
     
-    let viewModel = HomeViewModel(networkService: NetworkService())
+    let viewModel       = HomeViewModel(networkService: MockNetworkService())
     
     func testHasReachedEndOfPokemonList() throws {
         viewModel.pokemons = Response.mockPokemons
@@ -50,6 +51,16 @@ final class HomeViewModelTests: XCTestCase {
         viewModel.searchText = "Abc"
         let actualSearchResult2 = viewModel.searchResults.filter { $0.name.localizedCaseInsensitiveContains(viewModel.searchText)}
         XCTAssertTrue(actualSearchResult2.isEmpty)
+    }
+    
+    func testGetPokemons_returns_validData() throws {
+        let expectation = XCTestExpectation(description: "Get pokemon list")
+        viewModel.getPokemonList {
+            expectation.fulfill()
+        }
+        wait(for: [expectation])
+        XCTAssertTrue(self.viewModel.pokemons.count == 5)
+        XCTAssertEqual(self.viewModel.pokemons[0].name, "Pikachu")
     }
 }
 

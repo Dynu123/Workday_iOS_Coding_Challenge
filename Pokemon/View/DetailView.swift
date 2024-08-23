@@ -8,10 +8,10 @@
 import SwiftUI
 import Charts
 
+// MARK: - The detail view
 struct DetailView: View {
-    
-    @State var pokemon : Pokemon
-    @StateObject private var detailViewModel = DetailViewModel()
+    @State var pokemon                          : Pokemon
+    @StateObject private var detailViewModel    = DetailViewModel()
     
     var body: some View {
         ZStack {
@@ -124,20 +124,16 @@ struct DetailView: View {
                     }
                     .padding()
                 }
-            default:
-                EmptyView()
+            case .failure(let errorType):
+                ErrorView(error: errorType) {
+                    detailViewModel.getPokemonDetails(pokemon: pokemon) {}
+                }
             }
         }
         .onAppear {
-            detailViewModel.getPokemonDetails(pokemon: pokemon)
+            detailViewModel.getPokemonDetails(pokemon: pokemon) {}
         }
         .navigationBarTitleDisplayMode(.inline)
-        .alert(isPresented: $detailViewModel.showAlert) {
-            Alert(title: Text("Error"), message: Text(detailViewModel.loadingError), primaryButton: .default(Text("Retry"),
-                                                                                                             action: {detailViewModel.getPokemonDetails(pokemon: pokemon)}), secondaryButton: .cancel())
-            
-            
-        }
     }
 }
 

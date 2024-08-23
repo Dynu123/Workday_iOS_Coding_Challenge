@@ -9,25 +9,19 @@ import Foundation
 import Combine
 import Alamofire
 
-
-// MARK: - Class for mocking NetworkServiceProtocol
+ //MARK: - Class for mocking NetworkServiceProtocol
 class MockNetworkService: NetworkServiceProtocol {
-    func execute<T: Codable>(_ urlRequest: URLRequestBuilder, model: T.Type) -> AnyPublisher<DataResponse<T, NetworkError>, Never> {
-        
-        
-        
-        return AF.request(urlRequest)
-            .validate()
-            .publishDecodable(type: T.self)
-            .map { response in
-                response.mapError { error in
-                    let backendError = response.data.flatMap { try? JSONDecoder().decode(BackendError.self, from: $0)}
-                    return NetworkError(initialError: error, backendError: backendError)
-                }
-            }
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher( )
-       
-        
+    func execute<T>(_ urlRequest: any URLRequestBuilder, model: T.Type) -> AnyPublisher<T, AFError> {
+        if T.self == Response.self {
+            return Just(Response.mockResponse as! T)
+                            .setFailureType(to: AFError.self)
+                            .eraseToAnyPublisher()
+        } 
+        else if T.self == PokemonDetail.self {
+            return Just(PokemonDetail.mockPokemonDetail as! T)
+                            .setFailureType(to: AFError.self)
+                            .eraseToAnyPublisher()
+        }
+        return Fail(error: NSError() as! AFError).eraseToAnyPublisher()
     }
 }
